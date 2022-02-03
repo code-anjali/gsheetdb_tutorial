@@ -3,6 +3,7 @@
 import streamlit as st
 from google.oauth2 import service_account
 from gsheetsdb import connect
+import json
 
 # Create a connection object.
 credentials = service_account.Credentials.from_service_account_info(
@@ -18,11 +19,11 @@ conn = connect(credentials=credentials)
 @st.cache(ttl=600)
 def run_query(query):
     rows = conn.execute(query, headers=1)
-    return {"rows": rows}
+    return json.dumps({"rows": rows})
 
 
 sheet_url = st.secrets["private_gsheets_url"]
-rows_dict = run_query(f'SELECT * FROM "{sheet_url}"')
+rows_dict = json.loads(run_query(f'SELECT * FROM "{sheet_url}"'))
 
 # Print results.
 for row in rows_dict["rows"]:
