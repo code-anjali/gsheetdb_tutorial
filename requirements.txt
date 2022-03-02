@@ -1,2 +1,2 @@
-gsheetsdb
 streamlit
+shillelagh

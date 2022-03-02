@@ -1,6 +1,7 @@
 import streamlit as st
 from google.oauth2 import service_account
-from gsheetsdb import connect
+from shillelagh.backends.apsw.db import connect
+
 
 import logging
 
@@ -28,6 +29,32 @@ def run_pet_query(pet_query):
     rows = st.session_state.conn.execute(query, headers=1)
     return rows
 
+def update_pet_query(pet_to_update, update_pet):
+    logging.info(f"Updating pet: {update_pet}")
+    query = f'UPDATE  "{st.session_state.sheet_url}"  SET  pet=\'{update_pet}\'  WHERE pet=\'{pet_to_update}\''
+    logging.info(f"Querying DB: {query}")
+    rows = st.session_state.conn.execute(query)
+    logging.info(f"rows:  {rows}" )
+    return rows
+
+
+def insert_query(columns, values_arr):
+    """
+    INSERT INTO table1 (column1,column2 ,..)
+    VALUES
+   (value1,value2 ,...),
+   (value1,value2 ,...),
+    ...
+   (value1,value2 ,...);
+    :param arr:
+    :return:
+    """
+    logging.info(f"Updating pet: {update_pet}")
+    query = f'INSERT INTO  "{st.session_state.sheet_url}"  VALUES \'{pet_to_update}\''
+    logging.info(f"Querying DB: {query}")
+    rows = st.session_state.conn.execute(query)
+    logging.info(f"rows:  {rows}" )
+    return rows
 
 def print_results(rows):
     logging.info(f"Retrieved: {'some' if rows else '0'} results.")
@@ -35,14 +62,30 @@ def print_results(rows):
         st.write(f"{row.name} has a :{row.pet}:") # prints emoji
 
 
+def print_updated_rows(rows):
+    logging.info(f"Updated: {'some' if rows else '0'} results.")
+    st.write( f" {rows} updated.")
+
+
 if __name__ == '__main__':
     establish_connection()
     with st.form("form1"):
-        st.title("search func")
-        pet_query = st.text_input("search by pet")
-        user_clicked = st.form_submit_button(label="search now")
+        st.title("Search")
+        pet_query = st.text_input("Search by pet name")
+        user_clicked = st.form_submit_button(label="Search")
         if user_clicked:
             result = run_pet_query(pet_query=pet_query.strip().lower())
             print_results(result)
+
+        st.title("Update")
+        pet_to_update = st.selectbox("Pet:" , ['dog', 'cat', 'mouse', 'bird'])
+        update_pet = st.text_input("Update the pet name")
+        user_clicked = st.form_submit_button(label="Update")
+        if user_clicked:
+            logging.info(f"field_to_update (PET); item to update = {pet_to_update} , replace_with_value = {update_pet}")
+            result = update_pet_query(pet_to_update.strip().lower(), update_pet=update_pet.strip().lower())
+            print_updated_rows(result)
+
+        st.title("Delete")
 
 

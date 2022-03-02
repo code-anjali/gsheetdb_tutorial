@@ -131,3 +131,4 @@ dmypy.json
 # Ignore streamlit secrets
 .streamlit/
 secrets.toml
+googlesheetdb-credentials.json
