@@ -22,8 +22,10 @@ if __name__ == '__main__':
         db = MyDB()
         query1 = f'SELECT * FROM "{db.sheet_url}" WHERE person = \'FFF\''
         query2 = f'INSERT INTO "{db.sheet_url}" (person, pet) VALUES (\'NAME1\',\'PET1\')'
-        db.run_query(query=query2)
+        query3 = f'UPDATE  "{db.sheet_url}"  SET  pet=\'bird\'  WHERE pet=\'cow\''
 
-        rows_dict = db.run_query(query=query1)
+        rows_dict = db.run_query(query=query3)
+        print(f"{rows_dict.rowcount}")
+
         for row in rows_dict:
             print(f"{row}")

@@ -1,24 +1,21 @@
-import streamlit as st
-from google.oauth2 import service_account
-from shillelagh.backends.apsw.db import connect
+import json
 
+import streamlit as st
+import toml
+from shillelagh.backends.apsw.db import connect, Cursor
 
 import logging
 
 logging.basicConfig(format="%(asctime)s - %(message)s", datefmt="%m/%d/%Y %H:%M:%S", level=logging.INFO)
 
 
-def establish_connection():
+def establish_connection(sheet_key, sheet_names_json=".streamlit/sheet_names.json"):
     if "conn" not in st.session_state or "sheet_url" not in st.session_state or st.session_state.conn.closed:
-        logging.info(f"Establishing connection to Google sheet...")
-        credentials = service_account.Credentials.from_service_account_info(
-            st.secrets["gcp_service_account"],
-            scopes=[
-                "https://www.googleapis.com/auth/spreadsheets",
-            ],
-        )
-        st.session_state.conn = connect(credentials=credentials)
-        st.session_state.sheet_url = st.secrets["private_gsheets_url"]
+        with open(sheet_names_json, 'r') as sheets:
+            secrets = json.load(sheets)
+        st.session_state.conn = connect(":memory:", adapter_kwargs={
+            "gsheetsapi": {"service_account_file": ".streamlit/googlesheetdb-credentials.json"}})
+        st.session_state.sheet_url = secrets[sheet_key]
         logging.info(f"Connection to {st.session_state.sheet_url} established? {'no' if st.session_state.conn.closed else 'yes'}")
 
 
@@ -26,7 +23,7 @@ def run_pet_query(pet_query):
     logging.info(f"Querying for pet: {pet_query}")
     query = f'SELECT * FROM "{st.session_state.sheet_url}" WHERE pet=\'{pet_query}\''
     logging.info(f"Querying DB: {query}")
-    rows = st.session_state.conn.execute(query, headers=1)
+    rows = st.session_state.conn.execute(query)
     return rows
 
 def update_pet_query(pet_to_update, update_pet):
@@ -34,7 +31,7 @@ def update_pet_query(pet_to_update, update_pet):
     query = f'UPDATE  "{st.session_state.sheet_url}"  SET  pet=\'{update_pet}\'  WHERE pet=\'{pet_to_update}\''
     logging.info(f"Querying DB: {query}")
     rows = st.session_state.conn.execute(query)
-    logging.info(f"rows:  {rows}" )
+    logging.info(f"rows:  {rows}")
     return rows
 
 
@@ -56,19 +53,24 @@ def insert_query(columns, values_arr):
     logging.info(f"rows:  {rows}" )
     return rows
 
-def print_results(rows):
+def print_results(rows, header=["person", "pet"]):
     logging.info(f"Retrieved: {'some' if rows else '0'} results.")
     for row_id, row in enumerate(rows):
-        st.write(f"{row.name} has a :{row.pet}:") # prints emoji
+        st.write(f"{row[0]} = :{row[1].lower()}:")  # prints emoji
+        # for col_name, col in zip(header, row):
+        #     st.write(f"{col_name} = :{col.lower()}:")  # prints emoji
 
 
 def print_updated_rows(rows):
     logging.info(f"Updated: {'some' if rows else '0'} results.")
-    st.write( f" {rows} updated.")
+    cnt = 0
+    for _ in rows:
+        cnt += 1
+    st.write(f"updated {cnt} items")
 
 
 if __name__ == '__main__':
-    establish_connection()
+    establish_connection(sheet_key="sample pets")
     with st.form("form1"):
         st.title("Search")
         pet_query = st.text_input("Search by pet name")
