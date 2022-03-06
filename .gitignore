@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore streamlit secrets
+.streamlit/
+secrets.toml
+googlesheetdb-credentials.json
