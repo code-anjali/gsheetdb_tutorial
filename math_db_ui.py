@@ -40,6 +40,14 @@ def establish_connection(sheet_key,
         service_account_file = local_secret_fp if in_localhost else fill_secrets_from_streamlit(credentials_empty_fp)
         if not service_account_file:
             return
+        else:
+            with open(service_account_file, 'r') as checkcheck:
+                checks = json.load(checkcheck)
+                if not in_localhost:
+                    assert checks["private_key_id"] == st.secrets["gcp_service_account"]
+                else:
+                    assert len(checks["private_key_id"]) > 1
+
         st.session_state.conn = connect(":memory:", adapter_kwargs={
             "gsheetsapi": {"service_account_file": service_account_file}})
         st.session_state.sheet_url = secrets[sheet_key]
