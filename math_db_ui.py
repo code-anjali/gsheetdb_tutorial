@@ -44,7 +44,7 @@ def establish_connection(sheet_key,
             with open(service_account_file, 'r') as checkcheck:
                 checks = json.load(checkcheck)
                 if not in_localhost:
-                    assert checks["private_key_id"] == st.secrets["gcp_service_account"]
+                    assert checks["private_key_id"] == st.secrets["gcp_service_account"]["private_key_id"], f"checks['private_key_id']={checks['private_key_id']} \nand\n st.secrets['gcp_service_account']['private_key_id'] = {st.secrets['gcp_service_account']['private_key_id']}"
                 else:
                     assert len(checks["private_key_id"]) > 1
 
