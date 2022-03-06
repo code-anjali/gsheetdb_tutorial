@@ -11,13 +11,18 @@ logging.basicConfig(format="%(asctime)s - %(message)s", datefmt="%m/%d/%Y %H:%M:
 
 
 def fill_secrets_from_streamlit(credentials_empty_fp):
+    logging.info(f"Filling secrets from streamlit...")
     credentials_filled_temp_fp = tempfile.NamedTemporaryFile(delete=False, suffix='.json').name
     with open(credentials_filled_temp_fp, 'w') as credentials_filled_temp:
         with open(credentials_empty_fp, 'r') as credentials_empty:
             credentials_empty_entries = json.load(credentials_empty)
+            logging.info(f"before credentials were: {credentials_empty_entries}")
             for key_to_copy in ["private_key", "private_key_id", "client_id"]:
                 credentials_empty_entries[key_to_copy] = st.secrets["gcp_service_account"][key_to_copy]
+                assert not credentials_empty_entries[key_to_copy], f"toml from streamlit could not be read for: {key_to_copy}"
             json.dump(credentials_empty_entries, credentials_filled_temp)
+            logging.info(f"after credentials are  : {credentials_empty_entries}")
+            logging.info(f"saved credentials to   : {credentials_filled_temp}")
     return credentials_filled_temp_fp
 
 
