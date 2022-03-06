@@ -16,7 +16,7 @@ def fill_secrets_from_streamlit(credentials_empty_fp):
         with open(credentials_empty_fp, 'r') as credentials_empty:
             credentials_empty_entries = json.load(credentials_empty)
             for key_to_copy in ["private_key", "private_key_id", "client_id"]:
-                credentials_empty_entries[key_to_copy] = st.secrets[key_to_copy]
+                credentials_empty_entries[key_to_copy] = st.secrets["gcp_service_account"][key_to_copy]
             json.dump(credentials_empty_entries, credentials_filled_temp)
     return credentials_filled_temp_fp
 
@@ -52,7 +52,7 @@ def print_results(rows: Cursor, header):
 
 
 if __name__ == '__main__':
-    establish_connection(sheet_key="math challenge")
+    establish_connection(sheet_key="math challenge", in_localhost=True)
     with st.form("form1"):
         st.title("Search")
         student_query = st.text_input("Search by parent email ids")
