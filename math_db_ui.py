@@ -21,9 +21,7 @@ def fill_secrets_from_streamlit(credentials_empty_fp):
                 credentials_empty_entries[key_to_copy] = st.secrets["gcp_service_account"][key_to_copy]
                 if not st.secrets["gcp_service_account"][key_to_copy]:
                     return ""
-                # if not credentials_empty_entries[key_to_copy]:
-                #     return ""
-                assert not credentials_empty_entries[key_to_copy], f"toml from streamlit could not be read for: {key_to_copy} --> {st.secrets['gcp_service_account'][key_to_copy]}"
+                assert len(credentials_empty_entries[key_to_copy]) > 0, f"toml from streamlit could not be read for: {key_to_copy} --> {st.secrets['gcp_service_account'][key_to_copy]}"
             json.dump(credentials_empty_entries, credentials_filled_temp)
             logging.info(f"after credentials are  : {credentials_empty_entries}")
             logging.info(f"saved credentials to   : {credentials_filled_temp}")
