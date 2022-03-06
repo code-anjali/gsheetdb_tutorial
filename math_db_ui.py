@@ -52,7 +52,7 @@ def print_results(rows: Cursor, header):
 
 
 if __name__ == '__main__':
-    establish_connection(sheet_key="math challenge", in_localhost=True)
+    establish_connection(sheet_key="math challenge", in_localhost=False)
     with st.form("form1"):
         st.title("Search")
         student_query = st.text_input("Search by parent email ids")
