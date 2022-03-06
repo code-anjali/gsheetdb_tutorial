@@ -19,6 +19,8 @@ def fill_secrets_from_streamlit(credentials_empty_fp):
             logging.info(f"before credentials were: {credentials_empty_entries}")
             for key_to_copy in ["private_key", "private_key_id", "client_id"]:
                 credentials_empty_entries[key_to_copy] = st.secrets["gcp_service_account"][key_to_copy]
+                if not st.secrets["gcp_service_account"][key_to_copy]:
+                    return ""
                 assert not credentials_empty_entries[key_to_copy], f"toml from streamlit could not be read for: {key_to_copy}"
             json.dump(credentials_empty_entries, credentials_filled_temp)
             logging.info(f"after credentials are  : {credentials_empty_entries}")
@@ -35,8 +37,11 @@ def establish_connection(sheet_key,
     if "conn" not in st.session_state or "sheet_url" not in st.session_state or st.session_state.conn.closed:
         with open(sheet_names_json_fp, 'r') as sheets:
             secrets = json.load(sheets)
+        service_account_file = local_secret_fp if in_localhost else fill_secrets_from_streamlit(credentials_empty_fp)
+        if not service_account_file:
+            return
         st.session_state.conn = connect(":memory:", adapter_kwargs={
-            "gsheetsapi": {"service_account_file": local_secret_fp if in_localhost else fill_secrets_from_streamlit(credentials_empty_fp)}})
+            "gsheetsapi": {"service_account_file": service_account_file}})
         st.session_state.sheet_url = secrets[sheet_key]
         logging.info(f"Connection to {st.session_state.sheet_url} established? {'no' if st.session_state.conn.closed else 'yes'}")
 
