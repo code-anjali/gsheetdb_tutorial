@@ -1,3 +1,4 @@
 streamlit
-shillelagh[gsheetaspi]==1.0.0
+google-auth>=1.23.0,<2
+shillelagh[gsheetaspi]==1.0.1
 pandas
