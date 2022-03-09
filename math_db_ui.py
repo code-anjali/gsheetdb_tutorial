@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
     with st.form("form1"):
         st.title("Report card")
-        student_query = st.text_input("Looking by parent email ids (separate by comma if you used multiple email ids)")
+        student_query = st.text_input("Look up by parent email ids (separate by comma if you used multiple email ids)")
         user_clicked = st.form_submit_button(label="Generate report")
         if user_clicked:
             header = ["Student first name", "Student last name", "Grade", "Teacher\s name", "Email Address", "Math Challenge name"] + ques_arr
