@@ -104,7 +104,6 @@ class Challenge:
             challenge_wise_retaining[challenge_nm] = list_of_text_retain_dict
         return alls, challenge_wise_retaining
 
-    # TODO set expiration deadlines for challenges.
     @classmethod
     def load_student_answers(cls, rows_with_all_cols_dict: List[Dict[str, str]], challenge_wise_retaining: Dict[str, List[Dict[str, int]]]) -> Dict["StudentInfo", List["Challenge"]]:
         sd: Dict[StudentInfo, List["Challenge"]] = {}
