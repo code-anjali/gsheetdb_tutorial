@@ -80,26 +80,51 @@ def fetch_challenges_by_email(email_arr_query, sheet_key):
     return rows
 
 
+def matrices_by_firstname(unsorted_rows) -> Dict[StudentInfo, List[List[str]]]:
+    # unsorted_rows.sort(key=lambda x: x[0])
+    dict_m: Dict[StudentInfo, List[List[str]]] = dict() # gauri: list of her mcs, radhika: list of her mcs
+    for row in unsorted_rows:
+        student_in_row = mk_student(row)
+        if student_in_row not in dict_m:
+            dict_m[student_in_row] = []
+        dict_m[student_in_row].append(row)
+    return dict_m
+
+
+def decorated_student_ans(answers, marking):
+    return [f"**pass**" if {marking.passed} else "fail"] + \
+           [(ans or "") + "  " + ("\N{check mark}" if corr == "1" else "\N{cross mark}") for ans, corr in zip(list(answers), marking.diagnostics)]
+
+
 def prepare_results(rows: Cursor, header):
     # If        : this error is encountered --
     # ValueError: could not convert string to float: '6,931'
     # Then      : Google sheets- Format -> number -> plain text
     logging.info(f"Retrieved: {rows.rowcount if rows else '0'} submissions.")
     assert CHECKER_KEY in st.session_state and st.session_state[CHECKER_KEY] is not None, f"{CHECKER_KEY} for checking results is missing."
-    final_rows = []
     short_header = [x.replace('"','').replace("Question ", "Q") for x in header]
     logging.info(f"About to check student answers ... ")
-    for row in rows:  # one parent can have multiple kids.
-        student = mk_student(row)
-        final_rows.append(row)  # student name and answer.
-        result = st.session_state[CHECKER_KEY].check_one_challenge(student=student,
-                                                                   challenge_nm=row[5],
-                                                                   answers_arr=row[6:])
-        final_rows.append([f"GOLD:", "", "", "", "", ""] + result.gold_orig_ans)  # gold # "\N{grinning face}")
-        final_rows.append([f"pass" if {result.passed} else "fail", "", "", "", "", ""] + ["\N{check mark}" if y=="1" else "\N{cross mark}" for y in result.diagnostics])   # is_ans_correct
-        final_rows.append(["", "", "", "", "", ""] + ["" for _ in result.diagnostics])  # empty line
-    st.table(data=pd.DataFrame([row for row in final_rows], columns=short_header))
-    # st.table(data=[row for row in final_rows])
+
+    unsorted_rows = [row for row in rows]
+    dict_of_matrices: Dict[StudentInfo, List[List[str]]] = matrices_by_firstname(unsorted_rows)
+
+    for student_info, list_of_mcs in dict_of_matrices.items():  # one parent can have multiple kids.
+        st.write(" ")
+        st.write("----------------------------------------")
+        st.write(f"**{student_info.f_name}** {student_info.l_name} - {student_info.grade} - {student_info.teacher}")
+        st.write("----------------------------------------")
+        final_rows = []
+        for mc in list_of_mcs:
+            result = st.session_state[CHECKER_KEY].check_one_challenge(student=student_info, challenge_nm=mc[5], answers_arr=mc[6:])
+            final_rows.append([mc[5]] + result.gold_orig_ans)  # gold
+            final_rows.append(decorated_student_ans(answers=mc[6:], marking=result))  # student answers.
+            final_rows.append([""]*19)
+        data = pd.DataFrame([row for row in final_rows], columns=short_header)
+        prettier_data = data.style.set_table_styles([{'selector': 'tr:hover',
+                                                      'props': 'background-color: yellow; font-size: 1em;'}])
+        prettier_data = prettier_data.applymap(lambda x: 'background-color : lightyellow' if len(x) < 1 else '')
+        st.table(prettier_data)
+
 
 
 def load_result_checker(key):
@@ -120,7 +145,7 @@ def mk_student(row) -> StudentInfo:
 
 if __name__ == '__main__':
     st.set_page_config(layout="wide")
-    establish_connection(in_localhost=False)
+    establish_connection(in_localhost=True)
     init_sheet_url(sheet_key=GOLD_SHEET_KEY)
     init_sheet_url(sheet_key=STUDENT_SHEET_KEY)
     load_gold(target_var=GOLD_DATA_KEY, gold_sheet_key=GOLD_SHEET_KEY)
@@ -132,7 +157,7 @@ if __name__ == '__main__':
         student_query = st.text_input("Look up by parent email ids (separate by comma if you used multiple email ids)")
         user_clicked = st.form_submit_button(label="Generate report")
         if user_clicked:
-            header = ["Student first name", "Student last name", "Grade", "Teacher\s name", "Email Address", "Math Challenge name"] + ques_arr
+            header = ["MC"] + ques_arr
             responses = fetch_challenges_by_email(email_arr_query=student_query.strip().lower().split(','),
                                                   sheet_key="math_challenge")
             if responses:
