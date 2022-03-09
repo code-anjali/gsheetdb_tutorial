@@ -153,7 +153,7 @@ if __name__ == '__main__':
     ques_arr = [f'"Question {x}"' for x in range(1, 19)]
 
     with st.form("form1"):
-        st.title("Report card")
+        st.title("Results.")
         student_query = st.text_input("Look up by parent email ids (separate by comma if you used multiple email ids)")
         user_clicked = st.form_submit_button(label="Generate report")
         if user_clicked:
