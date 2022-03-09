@@ -120,7 +120,7 @@ def mk_student(row) -> StudentInfo:
 
 if __name__ == '__main__':
     st.set_page_config(layout="wide")
-    establish_connection(in_localhost=True)
+    establish_connection(in_localhost=False)
     init_sheet_url(sheet_key=GOLD_SHEET_KEY)
     init_sheet_url(sheet_key=STUDENT_SHEET_KEY)
     load_gold(target_var=GOLD_DATA_KEY, gold_sheet_key=GOLD_SHEET_KEY)
