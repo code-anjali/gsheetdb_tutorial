@@ -122,7 +122,7 @@ def prepare_results(rows: Cursor, header):
         data = pd.DataFrame([row for row in final_rows], columns=short_header)
         prettier_data = data.style.set_table_styles([{
                                                     'selector': 'tr:hover',
-                                                    'props': 'background-color: lightyellow; font-size: 1.2em;'
+                                                    'props': 'background-color: white; font-size: 1.1em;'
                                                      }])
         prettier_data = prettier_data.applymap(lambda x: 'background-color : lightyellow' if len(x) < 1 else '')
         st.table(prettier_data)
