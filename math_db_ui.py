@@ -171,7 +171,7 @@ if __name__ == '__main__':
     load_result_checker(key=CHECKER_KEY)
     ques_arr = [f'"Question {x}"' for x in range(1, 19)]
     secret_code = "xxx"
-    secret_leaderboard = "lb"
+    secret_leaderboard = "leaderboard"
     with st.form("form1"):
         st.title("Results.")
         student_query = st.text_input("Look up by parent email ids (separate by comma if you used multiple email ids)")
