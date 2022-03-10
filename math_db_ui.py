@@ -105,8 +105,9 @@ def matrices_by_firstname(unsorted_rows) -> Dict[StudentInfo, List[List[str]]]:
 
 
 def decorated_student_ans(answers, marking):
-    return [f"**pass**" if marking.passed else "fail"] + \
-           [(ans or "") + "  " + ("\N{check mark}" if corr == "1" else "\N{cross mark}") for ans, corr in zip(list(answers), marking.diagnostics)]
+    # U+2714 -> \U00002714
+    return ["\U0001F44D" if marking.passed else "\U0001F44E"] + \
+           [(ans or "") + "  " + ("\U00002714" if corr == "1" else "\N{cross mark}") for ans, corr in zip(list(answers), marking.diagnostics)]
 
 
 def prepare_results(rows: Cursor, header):
