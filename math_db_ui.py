@@ -105,7 +105,7 @@ def matrices_by_firstname(unsorted_rows) -> Dict[StudentInfo, List[List[str]]]:
 
 
 def decorated_student_ans(answers, marking):
-    return [f"**pass**" if {marking.passed} else "fail"] + \
+    return [f"**pass**" if marking.passed else "fail"] + \
            [(ans or "") + "  " + ("\N{check mark}" if corr == "1" else "\N{cross mark}") for ans, corr in zip(list(answers), marking.diagnostics)]
 
 
@@ -158,6 +158,10 @@ def mk_student(row) -> StudentInfo:
     return StudentInfo(f_name=row[0],l_name=row[1],grade=row[2],teacher=row[3],email=row[4])
 
 
+def print_leaderboard(sheet_key, gold):
+    pass
+
+
 if __name__ == '__main__':
     st.set_page_config(layout="wide")
     establish_connection(in_localhost=False)
@@ -167,6 +171,7 @@ if __name__ == '__main__':
     load_result_checker(key=CHECKER_KEY)
     ques_arr = [f'"Question {x}"' for x in range(1, 19)]
     secret_code = "xxx"
+    secret_leaderboard = "lb"
     with st.form("form1"):
         st.title("Results.")
         student_query = st.text_input("Look up by parent email ids (separate by comma if you used multiple email ids)")
@@ -177,6 +182,8 @@ if __name__ == '__main__':
             if secret_code in student_query:
                 responses = fetch_challenges_by_name(name_arr_query=student_query.replace(secret_code,"").strip().lower().split(','),
                                                       sheet_key=STUDENT_SHEET_KEY)
+            elif secret_leaderboard in student_query:
+                print_leaderboard(sheet_key=STUDENT_SHEET_KEY, gold=GOLD_DATA_KEY)
             else:
                 responses = fetch_challenges_by_email(email_arr_query=student_query.strip().lower().split(','),
                                                   sheet_key=STUDENT_SHEET_KEY)
