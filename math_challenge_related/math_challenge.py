@@ -68,10 +68,13 @@ class Challenge:
             replace_with= f"{t_id}"
             a = a.replace(replace_str, replace_with)
 
+        # The following code causes problems in other answers such as: a. 37th floor, b. 42nd floor, c. 39th floor, d. 40th floor
+        # which becomes 3seventh floor... etc. which is wrong.
+        # Instead we now have __OR__ in the gold sheet.
         # 1st bag: 20, 2nd bag:14, 3rd bag: 8, 4th bag: 18
-        # Replace 1st with first
-        for k, v in {"1st": "first", "2nd": "second", "3rd": "third", "4th": "fourth", "5th": "fifth", "6th": "sixth", "7th": "seventh", "8th": "seventh"}.items():
-            a = a.replace(k,v)
+        # Some kids write first instead of 1st
+        # for k, v in {"1st": "first", "2nd": "second", "3rd": "third", "4th": "fourth", "5th": "fifth", "6th": "sixth", "7th": "seventh", "8th": "seventh"}.items():
+        #     a = a.replace(k,v)
 
         if a:
             for ch in a:

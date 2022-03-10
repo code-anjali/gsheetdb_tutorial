@@ -4,6 +4,7 @@ import csv
 import os
 from pathlib import Path
 
+
 def split_csv(s, lowercase=False):
     return [(x.lower() if lowercase else x).strip() for x in s.split(",") if x.strip()]
 

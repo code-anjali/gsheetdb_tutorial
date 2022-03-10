@@ -142,7 +142,6 @@ def prepare_results(rows: Cursor, header):
         st.table(prettier_data)
 
 
-
 def load_result_checker(key):
     if key not in st.session_state:
         assert st.session_state[GOLD_DATA_KEY] is not None, f"Result checker requires gold answers which is not loaded."
