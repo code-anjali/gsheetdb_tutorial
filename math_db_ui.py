@@ -149,7 +149,7 @@ def load_result_checker(key):
 
 
 CHECKER_KEY="result_checker"
-STUDENT_SHEET_KEY="math_challenge"
+STUDENT_SHEET_KEY="math_challenge_local"
 GOLD_SHEET_KEY="math_challenge_gold"
 GOLD_DATA_KEY=f"values_{GOLD_SHEET_KEY}"
 
@@ -176,9 +176,9 @@ if __name__ == '__main__':
             header = ["MC"] + ques_arr
             if secret_code in student_query:
                 responses = fetch_challenges_by_name(name_arr_query=student_query.replace(secret_code,"").strip().lower().split(','),
-                                                      sheet_key="math_challenge")
+                                                      sheet_key=STUDENT_SHEET_KEY)
             else:
                 responses = fetch_challenges_by_email(email_arr_query=student_query.strip().lower().split(','),
-                                                  sheet_key="math_challenge")
+                                                  sheet_key=STUDENT_SHEET_KEY)
             if responses:
                 prepare_results(responses, header=header)
