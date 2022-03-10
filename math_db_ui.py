@@ -149,7 +149,7 @@ def load_result_checker(key):
 
 
 CHECKER_KEY="result_checker"
-STUDENT_SHEET_KEY="math_challenge_local"
+STUDENT_SHEET_KEY="math_challenge"
 GOLD_SHEET_KEY="math_challenge_gold"
 GOLD_DATA_KEY=f"values_{GOLD_SHEET_KEY}"
 
