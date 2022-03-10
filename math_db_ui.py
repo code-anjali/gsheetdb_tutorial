@@ -70,6 +70,16 @@ def load_gold(target_var, gold_sheet_key):
         st.session_state[target_var] = golds
 
 
+def fetch_challenges_by_name(name_arr_query, sheet_key):
+    logging.info(f"Querying by name: {name_arr_query}")
+    where_clause = " OR ".join([f"LOWER([Student first name])||' '||LOWER([Student last name])=\'{nm.strip().lower()}\'" for nm in name_arr_query])
+    questions_csv = ", ".join([f'"Question {x}"' for x in range(1, 19)])
+    query = f'SELECT "Student first name",	"Student last name", "Grade", "Teacher\'s name", "Email Address", "Math Challenge name", {questions_csv} FROM "{st.session_state[sheet_key]}" WHERE {where_clause}'
+    logging.info(f"Querying DB: {query}")
+    rows = st.session_state.conn.execute(query)
+    return rows
+
+
 def fetch_challenges_by_email(email_arr_query, sheet_key):
     logging.info(f"Querying by email ids: {email_arr_query}")
     where_clause = " OR ".join([f"LOWER([Email Address])=\'{email.strip().lower()}\'" for email in email_arr_query])
@@ -83,11 +93,14 @@ def fetch_challenges_by_email(email_arr_query, sheet_key):
 def matrices_by_firstname(unsorted_rows) -> Dict[StudentInfo, List[List[str]]]:
     # unsorted_rows.sort(key=lambda x: x[0])
     dict_m: Dict[StudentInfo, List[List[str]]] = dict() # gauri: list of her mcs, radhika: list of her mcs
+    logging.info(f"Length of unsorted rows = {len(unsorted_rows)}")
     for row in unsorted_rows:
         student_in_row = mk_student(row)
         if student_in_row not in dict_m:
             dict_m[student_in_row] = []
         dict_m[student_in_row].append(row)
+    for k in dict_m.keys():
+        dict_m[k].sort(key=lambda x: int(x[5].replace("MC", "")))
     return dict_m
 
 
@@ -100,18 +113,18 @@ def prepare_results(rows: Cursor, header):
     # If        : this error is encountered --
     # ValueError: could not convert string to float: '6,931'
     # Then      : Google sheets- Format -> number -> plain text
-    logging.info(f"Retrieved: {rows.rowcount if rows else '0'} submissions.")
     assert CHECKER_KEY in st.session_state and st.session_state[CHECKER_KEY] is not None, f"{CHECKER_KEY} for checking results is missing."
     short_header = [x.replace('"','').replace("Question ", "Q") for x in header]
     logging.info(f"About to check student answers ... ")
 
-    unsorted_rows = [row for row in rows]
+    unsorted_rows = [row[:] for row in rows]
+    logging.info(f"Retrieved: {unsorted_rows if unsorted_rows else '0'} submissions.")
     dict_of_matrices: Dict[StudentInfo, List[List[str]]] = matrices_by_firstname(unsorted_rows)
-
+    logging.info(f"This about {len(dict_of_matrices)} students [{dict_of_matrices.keys()}] \n{len(dict_of_matrices.values())} ... ")
     for student_info, list_of_mcs in dict_of_matrices.items():  # one parent can have multiple kids.
         st.write(" ")
         st.write("----------------------------------------")
-        st.write(f"**{student_info.f_name}** {student_info.l_name} - {student_info.grade} - {student_info.teacher}")
+        st.write(f"**{student_info.f_name}** {student_info.l_name} - {student_info.grade} - Teacher {student_info.teacher}")
         st.write("----------------------------------------")
         final_rows = []
         for mc in list_of_mcs:
@@ -153,14 +166,19 @@ if __name__ == '__main__':
     load_gold(target_var=GOLD_DATA_KEY, gold_sheet_key=GOLD_SHEET_KEY)
     load_result_checker(key=CHECKER_KEY)
     ques_arr = [f'"Question {x}"' for x in range(1, 19)]
-
+    secret_code = "xxx"
     with st.form("form1"):
         st.title("Results.")
         student_query = st.text_input("Look up by parent email ids (separate by comma if you used multiple email ids)")
         user_clicked = st.form_submit_button(label="Generate report")
         if user_clicked:
+            student_query = student_query.replace("  "," ").strip().lower()
             header = ["MC"] + ques_arr
-            responses = fetch_challenges_by_email(email_arr_query=student_query.strip().lower().split(','),
+            if secret_code in student_query:
+                responses = fetch_challenges_by_name(name_arr_query=student_query.replace(secret_code,"").strip().lower().split(','),
+                                                      sheet_key="math_challenge")
+            else:
+                responses = fetch_challenges_by_email(email_arr_query=student_query.strip().lower().split(','),
                                                   sheet_key="math_challenge")
             if responses:
                 prepare_results(responses, header=header)
