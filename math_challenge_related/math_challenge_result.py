@@ -1,7 +1,10 @@
+import logging
 from typing import List, Dict
 
 from math_challenge_related.math_challenge import Challenge
 from math_challenge_related.student_info import StudentInfo
+
+logging.basicConfig(format="%(asctime)s - %(message)s", datefmt="%m/%d/%Y %H:%M:%S", level=logging.INFO)
 
 
 class MathChallengeResult:
@@ -24,7 +27,6 @@ class MathChallengeResult:
         assert student_ans.challenge_name == correct_ans.challenge_name, f"Student challenge and correct challenge names mismatch, cannot compare:\nstudent response: {student_ans}\ncorrect response: {correct_ans}.\n"
 
         r = MathChallengeResult()
-
         for sa, ca in zip(student_ans.answers, correct_ans.answers):
             # sometimes there can be multiple answers
             if isinstance(ca, list):

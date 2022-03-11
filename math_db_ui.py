@@ -119,7 +119,7 @@ def prepare_results(rows: Cursor, header):
     logging.info(f"About to check student answers ... ")
 
     unsorted_rows = [row[:] for row in rows]
-    logging.info(f"Retrieved: {unsorted_rows if unsorted_rows else '0'} submissions.")
+    logging.info(f"Retrieved: {len(unsorted_rows) if unsorted_rows else '0'} submissions.")
     dict_of_matrices: Dict[StudentInfo, List[List[str]]] = matrices_by_firstname(unsorted_rows)
     # logging.info(f"This about {len(dict_of_matrices)} students [{dict_of_matrices.keys()}] \n{len(dict_of_matrices.values())} ... ")
     for student_info, list_of_mcs in dict_of_matrices.items():  # one parent can have multiple kids.

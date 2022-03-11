@@ -55,7 +55,8 @@ class Challenge:
         ans = ""
         a = a or ""
         a = a.strip().lower()
-        a = a.split("=")[-1]
+        if a.count("=") == 1:
+            a = a.split("=")[-1]
         # answer is 25 ducklings
         # output = 25
 
