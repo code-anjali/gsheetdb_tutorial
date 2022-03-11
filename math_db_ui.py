@@ -130,7 +130,8 @@ def prepare_results(rows: Cursor, header):
         final_rows = []
         for mc in list_of_mcs:
             result = st.session_state[CHECKER_KEY].check_one_challenge(student=student_info, challenge_nm=mc[5], answers_arr=mc[6:])
-            final_rows.append([mc[5]] + result.gold_orig_ans)  # gold
+            # final_rows.append([mc[5]] + result.gold_orig_ans)  # gold
+            final_rows.append([mc[5]] + result.gold_ans_pretty_orig)  # gold pretty that is not integer based.
             final_rows.append(decorated_student_ans(answers=mc[6:], marking=result))  # student answers.
             final_rows.append([""]*19)
         data = pd.DataFrame([row for row in final_rows], columns=short_header)

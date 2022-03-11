@@ -17,7 +17,7 @@ class MathChallengeResult:
         self.challenge_name = ""
 
     @classmethod
-    def result(cls, student_ans: Challenge, correct_ans: Challenge) -> "MathChallengeResult":
+    def result(cls, student_ans: Challenge, correct_ans: Challenge, correct_pretty_ans: List[str]=None) -> "MathChallengeResult":
         assert student_ans.is_student_resp, f"Did not pass the right student response:\n{student_ans}"
         assert not correct_ans.is_student_resp, f"Did not pass the right correct response:\n{correct_ans}"
         assert len(student_ans.answers) == len(correct_ans.answers), f"Student challenge and correct challenge number of answers mismatch, cannot compare:\nstudent response: {student_ans}\ncorrect response: {correct_ans}.\n"
@@ -47,6 +47,7 @@ class MathChallengeResult:
         r.student_ans = student_ans.answers
         r.gold_ans = correct_ans.answers
         r.gold_orig_ans = correct_ans.orig_answers
+        r.gold_ans_pretty_orig = correct_pretty_ans
         return r
 
     @classmethod
