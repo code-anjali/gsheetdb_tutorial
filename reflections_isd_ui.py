@@ -170,8 +170,10 @@ if __name__ == '__main__':
             right.table(df)
             # st.table(df.style.pipe(make_pretty))  # TODO styler object on df.
             # st.write(f"db insert query looks like:\n{db_rows_str}")
-            insert_query(reflections_records=db_rows_str, sheet_key=sheet_key)
-
-            spaces(2, left)
-            left.success(f"successfully submitted {st.session_state.total_rows} entries so far")
-            left.balloons()
+            if db_rows_str:
+                insert_query(reflections_records=db_rows_str, sheet_key=sheet_key)
+                spaces(2, left)
+                left.success(f"successfully submitted {st.session_state.total_rows} entries so far")
+                left.balloons()
+            else:
+                left.error(f"No record to save. Try again after adding content.")
