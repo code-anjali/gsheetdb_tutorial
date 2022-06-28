@@ -7,7 +7,7 @@ logging.basicConfig(format="%(asctime)s - %(message)s", datefmt="%m/%d/%Y %H:%M:
 
 
 class MyDB:
-    def __init__(self, toml_path=".streamlit/secrets.toml"):
+    def __init__(self, toml_path="secrets.toml"):
         logging.info(f"Establishing connection to Google sheet...")
         self.secrets = toml.load(toml_path)
         self.conn = connect(":memory:", adapter_kwargs={"gsheetsapi": {"service_account_file": ".streamlit/googlesheetdb-credentials.json"}})

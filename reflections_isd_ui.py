@@ -8,6 +8,8 @@ import json
 from shillelagh.backends.apsw.db import connect
 import logging
 
+from math_db_ui import establish_connection, init_sheet_url
+
 st.set_page_config(layout="wide")  # page, layout setup
 
 
@@ -38,33 +40,22 @@ class ReflectionsRecord:
         # return (self.email,self.name,self.school,self.art_cat,self.art_stm,self.url)
 
 
-def establish_connection(sheet_key, sheet_names_json="sheet_names.json"):
-    if "conn" not in st.session_state or "sheet_url" not in st.session_state or st.session_state.conn.closed:
-        with open(sheet_names_json, 'r') as sheets:
-            secrets = json.load(sheets)
-        st.session_state.conn = connect(":memory:", adapter_kwargs={
-            "gsheetsapi": {"service_account_file": ".streamlit/googlesheetdb-credentials.json"}})
-        st.session_state.sheet_url = secrets[sheet_key]
-        logging.info(
-            f"Connection to {st.session_state.sheet_url} established? {'no' if st.session_state.conn.closed else 'yes'}")
-
-
-def run_search_query(search_query):
+def run_search_query(search_query, sheet_key):
     logging.info(f"Check artwork submissions: {search_query}")
-    query = f'SELECT * FROM "{st.session_state.sheet_url}" WHERE school=\'{search_query}\''
+    query = f'SELECT * FROM "{st.session_state[sheet_key]}" WHERE school=\'{search_query}\''
     logging.info(f"Querying DB: {query}")
     rows = st.session_state.conn.execute(query)
     return rows
 
 
-def insert_query(reflections_records):
+def insert_query(reflections_records, sheet_key):
     # The following is a sample query
     # f'INSERT INTO "{db.sheet_url}" (person, pet)  VALUES (\'NAME1\',\'PET1\')'
     logging.info(f"Saving records")
-    query = f'INSERT INTO  "{st.session_state.sheet_url}"  VALUES {reflections_records}'
+    query = f'INSERT INTO  "{st.session_state[sheet_key]}"  VALUES {reflections_records}'
     logging.info(f"Querying DB: {query}")
     rows = st.session_state.conn.execute(query)
-    logging.info(f"rows:  {rows}" )
+    # logging.info(f"rows:  {rows}")
     return rows
 
 
@@ -135,16 +126,20 @@ def spaces(n: int):
 
 
 if __name__ == '__main__':
-    establish_connection(sheet_key="reflections-submissions")
+    sheet_key = "reflections-submissions"
+    establish_connection(in_localhost=False)
+    init_sheet_url(sheet_key=sheet_key)
+
     with st.form("form1"):
         st.title("Check submitted entries")
-        search_query = st.text_input("Search by email address used for submissions")
+        search_query = st.text_input("Search by school name")
+        # search_query = search_query.lower().replace("school","").replace("elementary","").replace("high","").replace("middle","")
         user_clicked = st.form_submit_button(label="Search")
         if user_clicked:
-            result = run_search_query(search_query=search_query.strip().lower())
+            result = run_search_query(search_query=search_query.strip().lower(),
+                                      sheet_key=sheet_key)
 
             print_results(result, header=ReflectionsRecord.get_header())
-
 
     if 'total_rows' not in st.session_state:  # maintain total_rows
         st.session_state.total_rows = 1
@@ -164,14 +159,8 @@ if __name__ == '__main__':
             st.write(f"saving the following {len(pd_rows)} records")
             st.table(df)
             # st.table(df.style.pipe(make_pretty))  # TODO styler object on df.
-
-            # TODO write in gsheet
-            # [['a','b'], ['a2', 'b2']]
-            # ('a','b'), ('a2', 'b2')
-
-            # f'INSERT INTO  "{st.session_state.sheet_url}" VALUES \'{reflections_records}\''
             st.write(f"db insert query looks like:\n{db_rows_str}")
-            insert_query(reflections_records=db_rows_str    )
+            insert_query(reflections_records=db_rows_str, sheet_key=sheet_key)
 
             spaces(2)
             st.success(f"successfully submitted {st.session_state.total_rows} entries so far")

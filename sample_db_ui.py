@@ -70,7 +70,7 @@ def print_updated_rows(rows):
 
 
 if __name__ == '__main__':
-    establish_connection(sheet_key="sample pets")
+    establish_connection(sheet_key="sample_pets")
     with st.form("form1"):
         st.title("Search")
         pet_query = st.text_input("Search by pet name")
