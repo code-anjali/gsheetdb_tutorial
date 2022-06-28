@@ -59,11 +59,14 @@ def insert_query(reflections_records, sheet_key):
     return rows
 
 
-def print_results(rows, header):
+def print_results(rows, header, column_handler=None):
     logging.info(f"Retrieved: {'some' if rows else '0'} results.")
     logging.info(f"Retrieved: {rows}")
     df = pd.DataFrame(rows, columns=header)
-    st.table(df)
+    if column_handler:
+        column_handler.table(df)
+    else:
+        st.table(df)
     # for row_id, row in enumerate(df):
     #     st.write(f"{df}")
     # https://www.askpython.com/python-modules/pandas/add-rows-to-dataframe
@@ -120,9 +123,12 @@ def make_pretty(styler):
     return styler
 
 
-def spaces(n: int):
+def spaces(n: int, column_handler=None):
     for i in range(n):
-        st.write("")
+        if column_handler:
+            column_handler.write("")
+        else:
+            st.write("")
 
 
 if __name__ == '__main__':
@@ -130,24 +136,28 @@ if __name__ == '__main__':
     establish_connection(in_localhost=False)
     init_sheet_url(sheet_key=sheet_key)
 
-    with st.form("form1"):
-        st.title("Check submitted entries")
-        search_query = st.text_input("Search by school name")
+    left, right = st.columns(2)
+    left.title("Submit entries.")
+    spaces(2, left)
+    right.title("Verify or lookup entries.")
+    spaces(2, right)
+    # right.image("image.png", width=300)
+
+    with right.form("form1"):
+        search_query = right.text_input("Search by school name")
         # search_query = search_query.lower().replace("school","").replace("elementary","").replace("high","").replace("middle","")
         user_clicked = st.form_submit_button(label="Search")
         if user_clicked:
-            result = run_search_query(search_query=search_query.strip().lower(),
-                                      sheet_key=sheet_key)
-
-            print_results(result, header=ReflectionsRecord.get_header())
+            result = run_search_query(search_query=search_query.strip().lower(), sheet_key=sheet_key)
+            print_results(result, header=ReflectionsRecord.get_header(), column_handler=right)
 
     if 'total_rows' not in st.session_state:  # maintain total_rows
         st.session_state.total_rows = 1
 
-    if st.button(label="add a row"):  # if new row must be added.
+    if left.button(label="add a row"):  # if new row must be added.
         st.session_state.total_rows += 1
 
-    with st.form("schoolForm"):
+    with left.form("schoolForm"):
         for i in range(1, st.session_state.total_rows + 1):  # add new row and maintain old states on prior rows
             add_row_preserving_old_state(i)
 
@@ -156,12 +166,12 @@ if __name__ == '__main__':
             comma = ","
             db_rows_str = comma.join([record.get_db_row() for record in st.session_state["RECORDS"] if record.is_valid()])
             df = pd.DataFrame(data = pd_rows, columns=ReflectionsRecord.get_header())
-            st.write(f"saving the following {len(pd_rows)} records")
-            st.table(df)
+            right.write(f"saving the following {len(pd_rows)} records")
+            right.table(df)
             # st.table(df.style.pipe(make_pretty))  # TODO styler object on df.
-            st.write(f"db insert query looks like:\n{db_rows_str}")
+            # st.write(f"db insert query looks like:\n{db_rows_str}")
             insert_query(reflections_records=db_rows_str, sheet_key=sheet_key)
 
-            spaces(2)
-            st.success(f"successfully submitted {st.session_state.total_rows} entries so far")
-            st.balloons()
+            spaces(2, left)
+            left.success(f"successfully submitted {st.session_state.total_rows} entries so far")
+            left.balloons()
